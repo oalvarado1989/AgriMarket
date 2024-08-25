@@ -155,6 +155,9 @@
     {
         categoriaSeleccionada = args.Value.ToString();
         buscar = "";
+
+        Console.WriteLine($"Categoría seleccionada: {categoriaSeleccionada}"); // Para verificar el valor seleccionado
+
         await ObtenerCatalogo();
     }
 

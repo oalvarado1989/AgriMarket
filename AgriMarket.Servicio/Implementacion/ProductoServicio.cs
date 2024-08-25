@@ -21,16 +21,29 @@ namespace AgriMarket.Servicio.Implementacion
         {
             try
             {
-                var consulta = _modeloRepositorio.Consultar(p =>
-                p.Nombre.ToLower().Contains(buscar.ToLower()) &&
-                p.IdCategoriaNavigation.Nombre.ToLower().Contains(buscar.ToLower()));
+                var consulta = _modeloRepositorio.Consultar(p => true); // consulta que siempre es verdadera
 
+                // Filtramos por categoría si se especifica
+                if (!string.IsNullOrEmpty(categoria))
+                {
+                    consulta = consulta.Where(p => p.IdCategoriaNavigation.Nombre.ToLower().Contains(categoria.ToLower()));
+                }
+
+                // Filtramos por el término de búsqueda si se especifica
+                if (!string.IsNullOrEmpty(buscar))
+                {
+                    consulta = consulta.Where(p => p.Nombre.ToLower().Contains(buscar.ToLower()));
+                }
+
+                // Incluimos la navegación de la categoría
+                consulta = consulta.Include(c => c.IdCategoriaNavigation);
+
+                // Mapeamos y devolvemos la lista de productos
                 List<ProductoDTO> lista = _mapper.Map<List<ProductoDTO>>(await consulta.ToListAsync());
                 return lista;
             }
             catch (Exception ex)
             {
-
                 throw ex;
             }
         }
