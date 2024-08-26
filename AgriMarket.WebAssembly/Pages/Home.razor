@@ -1,0 +1,134 @@
+﻿@page "/"
+@inject NavigationManager NavigationManager
+
+<style>
+    /* Ajuste del color de los títulos */
+    h2 {
+        color: #5a9bd5; /* Azul claro */
+        text-align: center;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #007bff; /* Subrayado azul brillante */
+    }
+
+    /* Ajuste del color del texto de las secciones */
+    .section-text {
+        color: #5a9bd5; /* Azul claro */
+    }
+
+    /* Ajuste del color y estilo de los íconos */
+    .section-icon {
+        color: #007bff; /* Azul brillante para los íconos */
+    }
+
+        .section-icon:hover {
+            color: #0056b3; /* Azul más oscuro en hover */
+            transform: scale(1.2); /* Ligeramente más grande en hover */
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+
+    /* Bordes y sombras para cajas */
+    .section-box {
+        border: 1px solid #cfd8dc; /* Borde azul claro */
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Sombra suave para profundidad */
+        background-color: #e3f2fd; /* Fondo azul muy claro */
+    }
+
+        .section-box:hover {
+            box-shadow: 0px 8px 10px rgba(0, 0, 0, 0.2); /* Sombra más fuerte en hover */
+            transition: box-shadow 0.3s ease;
+        }
+</style>
+
+<div class="container-fluid p-0">
+
+    <!-- Sección Principal con Imagen y Bienvenida -->
+    <div class="container text-center my-5">
+        <!-- Imagen de Bienvenida -->
+        <img src="imagenes/agricultura.jpg" alt="Bienvenida a AgriMarket" class="img-fluid mb-4" style="max-height: 300px;" />
+
+        <!-- Texto de Bienvenida -->
+        <h1 class="display-4">Bienvenidos a AgriMarket</h1>
+
+        <!-- Botón de Acción Principal -->
+        <button class="btn btn-primary btn-lg mt-3" @onclick="NavigateToCatalog">Comencemos</button>
+    </div>
+
+    <!-- Sección "Cómo Funciona" -->
+    <div class="container text-center my-5">
+        <h2 class="mb-4">¿Cómo funciona AgriMarket?</h2>
+        <div class="row section-box">
+            <div class="col-md-4">
+                <i class="bi bi-person-plus-fill mb-2 section-icon" style="font-size: 3rem;"></i>
+                <h4 class="section-text">Regístrate</h4>
+                <p class="section-text">Crea tu cuenta en pocos minutos.</p>
+            </div>
+            <div class="col-md-4">
+                <i class="bi bi-search mb-2 section-icon" style="font-size: 3rem;"></i>
+                <h4 class="section-text">Explora</h4>
+                <p class="section-text">Navega entre cientos de productos frescos.</p>
+            </div>
+            <div class="col-md-4">
+                <i class="bi bi-cart-fill mb-2 section-icon" style="font-size: 3rem;"></i>
+                <h4 class="section-text">Compra Directamente</h4>
+                <p class="section-text">Recibe productos frescos en tu puerta.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sección "Beneficios de AgriMarket" -->
+    <div class="container text-center my-5">
+        <h2 class="mb-4">Beneficios de AgriMarket</h2>
+        <div class="row section-box">
+            <div class="col-md-6">
+                <i class="bi bi-check-circle-fill mb-2 section-icon" style="font-size: 3rem;"></i>
+                <h4 class="section-text">Para Consumidores</h4>
+                <ul class="list-unstyled section-text">
+                    <li>Acceso a productos frescos y locales.</li>
+                    <li>Compra segura y directa del productor.</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <i class="bi bi-check-circle-fill mb-2 section-icon" style="font-size: 3rem;"></i>
+                <h4 class="section-text">Para Productores</h4>
+                <ul class="list-unstyled section-text">
+                    <li>Venta directa sin intermediarios.</li>
+                    <li>Mayor margen de ganancia.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pie de Página -->
+    <footer class="bg-light py-4">
+        <div class="container text-center">
+            <p>&copy; 2024 AgriMarket. Todos los derechos reservados.</p>
+            <p><strong>Contáctanos:</strong></p>
+            <p>
+                Email: <a href="mailto:contacto@agrimarket.com">contacto@agrimarket.com</a><br />
+                Teléfono: +123456789
+            </p>
+            <p>Síguenos en nuestras redes sociales:</p>
+            <a href="https://www.facebook.com/tu-pagina" target="_blank" class="me-2 footer-icon">
+                <i class="fab fa-facebook" style="font-size: 1.5rem;"></i>
+            </a>
+            <a href="https://www.instagram.com/tu-pagina" target="_blank" class="me-2 footer-icon">
+                <i class="fab fa-instagram" style="font-size: 1.5rem;"></i>
+            </a>
+            <a href="https://www.twitter.com/tu-pagina" target="_blank" class="me-2 footer-icon">
+                <i class="fab fa-twitter" style="font-size: 1.5rem;"></i>
+            </a>
+            <a href="https://www.linkedin.com/in/tu-pagina" target="_blank" class="me-2 footer-icon">
+                <i class="fab fa-linkedin" style="font-size: 1.5rem;"></i>
+            </a>
+        </div>
+    </footer>
+</div>
+
+@code {
+    private void NavigateToCatalog()
+    {
+        NavigationManager.NavigateTo("/catalogo");
+    }
+}
