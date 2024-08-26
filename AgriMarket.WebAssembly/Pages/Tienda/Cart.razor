@@ -8,7 +8,6 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using System.Security.Claims
 
-
 <div class="row mt-4">
     <div class="col-sm-8">
         <div class="card mb-3">
@@ -76,51 +75,83 @@
     <div class="col-sm-4">
         <div class="card mb-3">
             <div class="card-body">
-                <EditForm Model="tarjeta" OnValidSubmit="ProcesarPago">
-                    <DataAnnotationsValidator></DataAnnotationsValidator>
-                    <div class="mb-2">
-                        <label class="form-label">Nombre Titular</label>
-                        <input type="text" class="form-control form-control-sm" placeholder="" @bind-value="tarjeta.Titular" disabled="@disabled">
-                        <ValidationMessage For="@(()=>tarjeta.Titular)" />
-                    </div>
-                    <div class="mb-2">
-                        <label class="form-label">Numero Tarjeta</label>
-                        <input type="text" class="form-control form-control-sm" placeholder="##############" autocomplete="off" @bind-value="tarjeta.Numero" disabled="@disabled">
-                        <ValidationMessage For="@(()=>tarjeta.Numero)" />
-                    </div>
-                    <div class="row">
-                        <div class="col-sm-6">
-                            <div class="mb-2">
-                                <label class="form-label">Vigencia</label>
-                                <input type="text" class="form-control form-control-sm" placeholder="MM/YY" autocomplete="off" @bind-value="tarjeta.Vigencia" disabled="@disabled">
-                                <ValidationMessage For="@(()=>tarjeta.Vigencia)" />
-                            </div>
-                        </div>
-                        <div class="col-sm-6">
-                            <div class="mb-2">
-                                <label class="form-label">CVV</label>
-                                <input type="text" class="form-control form-control-sm" placeholder="###" autocomplete="off" @bind-value="tarjeta.CVV" disabled="@disabled">
-                                <ValidationMessage For="@(()=>tarjeta.CVV)" />
-                            </div>
-                        </div>
-                    </div>
-                    <hr />
-                    <div class="d-flex justify-content-between">
-                        <div>Total a pagar:</div>
-                        <div>S/. @(lista.Sum(i => i.Total))</div>
-                    </div>
-                    <div class="mt-2">
-                        <div class="d-grid gap-1">
-                            <button class="btn btn-outline-secondary float-end" type="submit" disabled="@disabled">Procesar pago</button>
-                        </div>
-                    </div>
-                </EditForm>
 
-                @* COMENTAR TODO ESTO*@
+                <!-- Selección de Método de Pago -->
+                <div class="mb-2">
+                    <label class="form-label">Método de Pago</label>
+                    <select class="form-control form-control-sm" @bind="metodoPagoSeleccionado">
+                        <option value="Tarjeta">Tarjeta de Crédito</option>
+                        <option value="Transferencia">Transferencia Bancaria</option>
+                        <option value="Contraentrega">Contraentrega</option>
+                    </select>
+                </div>
+
+                <!-- Formulario de Pago con Tarjeta -->
+                @if (metodoPagoSeleccionado == "Tarjeta")
+                {
+                    <EditForm Model="tarjeta" OnValidSubmit="ProcesarPago">
+                        <DataAnnotationsValidator></DataAnnotationsValidator>
+                        <div class="mb-2">
+                            <label class="form-label">Nombre Titular</label>
+                            <input type="text" class="form-control form-control-sm" placeholder="" @bind="tarjeta.Titular" disabled="@disabled">
+                            <ValidationMessage For="@(()=>tarjeta.Titular)" />
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Numero Tarjeta</label>
+                            <input type="text" class="form-control form-control-sm" placeholder="##############" autocomplete="off" @bind="tarjeta.Numero" disabled="@disabled">
+                            <ValidationMessage For="@(()=>tarjeta.Numero)" />
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="mb-2">
+                                    <label class="form-label">Vigencia</label>
+                                    <input type="text" class="form-control form-control-sm" placeholder="MM/YY" autocomplete="off" @bind="tarjeta.Vigencia" disabled="@disabled">
+                                    <ValidationMessage For="@(()=>tarjeta.Vigencia)" />
+                                </div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="mb-2">
+                                    <label class="form-label">CVV</label>
+                                    <input type="text" class="form-control form-control-sm" placeholder="###" autocomplete="off" @bind="tarjeta.CVV" disabled="@disabled">
+                                    <ValidationMessage For="@(()=>tarjeta.CVV)" />
+                                </div>
+                            </div>
+                        </div>
+                        <hr />
+                        <div class="d-flex justify-content-between">
+                            <div>Total a pagar:</div>
+                            <div>S/. @(lista.Sum(i => i.Total))</div>
+                        </div>
+                        <div class="mt-2">
+                            <div class="d-grid gap-1">
+                                <button class="btn btn-outline-secondary float-end" type="submit" disabled="@disabled">Procesar pago</button>
+                            </div>
+                        </div>
+                    </EditForm>
+                }
+                else if (metodoPagoSeleccionado == "Transferencia")
+                {
+                    <div>
+                        <p>Por favor, realice la transferencia a la cuenta siguiente:</p>
+                        <p>Banco: XYZ</p>
+                        <p>Número de Cuenta: 1234567890</p>
+                        <p>Una vez realizada la transferencia, su pedido será procesado.</p>
+                        <button class="btn btn-outline-secondary float-end" @onclick="ConfirmarPagoTransferencia">Procesar Pago</button>
+                    </div>
+                }
+                else if (metodoPagoSeleccionado == "Contraentrega")
+                {
+                    <div>
+                        <p>El pago se realizará al momento de la entrega del pedido.</p>
+                        <button class="btn btn-outline-secondary float-end" @onclick="ConfirmarPagoContraEntrega">Procesar Pago</button>
+                    </div>
+                }
+
+                <!-- Mensaje de Autorización -->
                 <AuthorizeView>
                     <NotAuthorized>
                         <div class="alert alert-danger mt-2" role="alert">
-                            Debe iniciar sesion para poder realizar la compra
+                            Debe iniciar sesión para poder realizar la compra
                         </div>
                      </NotAuthorized>
                 </AuthorizeView>
@@ -133,8 +164,8 @@
 @code {
     private bool disabled = true;
     private List<CarritoDTO> lista = new List<CarritoDTO>();
-    private decimal? TotalPagar = 0;
     private TarjetaDTO tarjeta = new TarjetaDTO();
+    private string metodoPagoSeleccionado = "Tarjeta";  // Por defecto, seleccionamos Tarjeta de Crédito
 
     [CascadingParameter]
     private Task<AuthenticationState> authenticationState{ get; set; }
@@ -154,7 +185,6 @@
 
         if (item.Cantidad -1 > 0)
         {
-
             decimal? precioFinal = (item.Producto.PrecioOferta != 0 && item.Producto.PrecioOferta < item.Producto.Precio) ? 
             item.Producto.PrecioOferta : item.Producto.Precio;
 
@@ -209,23 +239,36 @@
         string idUsuario = authState.User.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).Select(c => c.Value).Single();
 
         VentaDTO modelo = new VentaDTO()
-          {
+        {
             IdUsuario = Convert.ToInt32(idUsuario),
             Total = lista.Sum(i => i.Total),
             DetalleVenta = detalle
-          };
+        };
 
-          var response = await ventaServicio.Registrar(modelo);
+        var response = await ventaServicio.Registrar(modelo);
 
-          if (response.EsCorrecto)
-          {
+        if (response.EsCorrecto)
+        {
             await carritoServicio.LimpiarCarrito();
             toastService.ShowSuccess("Venta registrada");
             _navServicio.NavigateTo("/catalogo");
-          }
-          else
-          {
+        }
+        else
+        {
             toastService.ShowError(response.Mensaje);
-          }
+        }
+    }
+
+    private async Task ConfirmarPagoTransferencia()
+    {
+        // Aquí puedes incluir la lógica para confirmar que se ha seleccionado Transferencia como método de pago.
+        await ProcesarPago();
+    }
+
+    private async Task ConfirmarPagoContraEntrega()
+    {
+        // Aquí puedes incluir la lógica para confirmar que se ha seleccionado Contraentrega como método de pago.
+        await ProcesarPago();
+        toastService.ShowInfo("Pague al recibir el producto.");
     }
 }
