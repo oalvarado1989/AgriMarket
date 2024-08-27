@@ -1,0 +1,56 @@
+﻿@page "/notificaciones"
+@inject INotificacionServicio notificacionServicio
+@inject NavigationManager NavigationManager
+
+@attribute [Authorize(Roles = "Administrador, Productor")]
+
+<h3>Notificaciones</h3>
+
+<div class="mb-3">
+    <button class="btn btn-danger" @onclick="LimpiarTodasLasNotificaciones">Limpiar Todas las Notificaciones</button>
+</div>
+
+<ul class="list-group">
+    @if (notificaciones.Any())
+    {
+        @foreach (var notificacion in notificaciones)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <div><strong>Fecha:</strong> @notificacion.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</div>
+                    <div><strong>Pago:</strong> @notificacion.MetodoPago</div>
+                    <div><strong>Consumidor:</strong> @notificacion.NombreConsumidor</div>
+                </div>
+            </li>
+        }
+    }
+    else
+    {
+        <li class="list-group-item">No hay notificaciones</li>
+    }
+</ul>
+
+@code {
+    private List<NotificacionDTO> notificaciones = new List<NotificacionDTO>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Cargar las notificaciones al iniciar
+        notificaciones = await notificacionServicio.ObtenerNotificaciones();
+    }
+
+    private async Task LimpiarTodasLasNotificaciones()
+    {
+        await notificacionServicio.LimpiarNotificaciones();
+        notificaciones.Clear();
+        StateHasChanged(); // Refresca la UI para reflejar la limpieza
+        await ActualizarNavMenu();
+    }
+
+
+    private async Task ActualizarNavMenu()
+    {
+        // Actualizar el NavMenu sin forzar la recarga completa
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+    }
+}

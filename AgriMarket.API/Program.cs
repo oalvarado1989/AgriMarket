@@ -31,6 +31,8 @@ builder.Services.AddScoped<IProductoServicio, ProductoServicio>();
 builder.Services.AddScoped<IVentaServicio, VentaServicio>();
 builder.Services.AddScoped<IDashboardServicio, DashboardServicio>();
 
+
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("NuevaPolitica", app =>

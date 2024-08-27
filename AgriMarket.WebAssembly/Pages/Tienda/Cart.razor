@@ -5,6 +5,9 @@
 @inject IToastService toastService
 @inject NavigationManager _navServicio
 
+@inject INotificacionServicio notificacionServicio
+
+
 @using Microsoft.AspNetCore.Components.Authorization
 @using System.Security.Claims
 
@@ -37,11 +40,11 @@
                                         <td valign="middle">@item.Precio</td>
                                         <td valign="middle" align="center">
                                             <div class="btn-group" role="group">
-                                                <button type="button" class="btn btn-outline-dark" @onclick="(() =>Disminuir(item.Producto.IdProducto))">
+                                                <button type="button" class="btn btn-outline-dark" @onclick="(() => Disminuir(item.Producto.IdProducto))">
                                                     <i class="fas fa-minus"></i>
                                                 </button>
                                                 <input class="form-control" readonly="readonly" style="width:50px" @bind-value="item.Cantidad" />
-                                                <button type="button" class="btn btn-outline-dark" @onclick="(() =>Aumentar(item.Producto.IdProducto))">
+                                                <button type="button" class="btn btn-outline-dark" @onclick="(() => Aumentar(item.Producto.IdProducto))">
                                                     <i class="fas fa-plus"></i>
                                                 </button>
                                             </div>
@@ -94,33 +97,33 @@
                         <div class="mb-2">
                             <label class="form-label">Nombre Titular</label>
                             <input type="text" class="form-control form-control-sm" placeholder="" @bind="tarjeta.Titular" disabled="@disabled">
-                            <ValidationMessage For="@(()=>tarjeta.Titular)" />
+                            <ValidationMessage For="@(() => tarjeta.Titular)" />
                         </div>
                         <div class="mb-2">
                             <label class="form-label">Numero Tarjeta</label>
                             <input type="text" class="form-control form-control-sm" placeholder="##############" autocomplete="off" @bind="tarjeta.Numero" disabled="@disabled">
-                            <ValidationMessage For="@(()=>tarjeta.Numero)" />
+                            <ValidationMessage For="@(() => tarjeta.Numero)" />
                         </div>
                         <div class="row">
                             <div class="col-sm-6">
                                 <div class="mb-2">
                                     <label class="form-label">Vigencia</label>
                                     <input type="text" class="form-control form-control-sm" placeholder="MM/YY" autocomplete="off" @bind="tarjeta.Vigencia" disabled="@disabled">
-                                    <ValidationMessage For="@(()=>tarjeta.Vigencia)" />
+                                    <ValidationMessage For="@(() => tarjeta.Vigencia)" />
                                 </div>
                             </div>
                             <div class="col-sm-6">
                                 <div class="mb-2">
                                     <label class="form-label">CVV</label>
                                     <input type="text" class="form-control form-control-sm" placeholder="###" autocomplete="off" @bind="tarjeta.CVV" disabled="@disabled">
-                                    <ValidationMessage For="@(()=>tarjeta.CVV)" />
+                                    <ValidationMessage For="@(() => tarjeta.CVV)" />
                                 </div>
                             </div>
                         </div>
                         <hr />
                         <div class="d-flex justify-content-between">
                             <div>Total a pagar:</div>
-                            <div>S/. @(lista.Sum(i => i.Total))</div>
+                            <div>S/. @(lista.Sum(i => i.Total ?? 0m))</div>
                         </div>
                         <div class="mt-2">
                             <div class="d-grid gap-1">
@@ -153,9 +156,9 @@
                         <div class="alert alert-danger mt-2" role="alert">
                             Debe iniciar sesión para poder realizar la compra
                         </div>
-                     </NotAuthorized>
+                    </NotAuthorized>
                 </AuthorizeView>
-                
+
             </div>
         </div>
     </div>
@@ -168,7 +171,7 @@
     private string metodoPagoSeleccionado = "Tarjeta";  // Por defecto, seleccionamos Tarjeta de Crédito
 
     [CascadingParameter]
-    private Task<AuthenticationState> authenticationState{ get; set; }
+    private Task<AuthenticationState> authenticationState { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -183,10 +186,10 @@
     {
         CarritoDTO item = lista.First(p => p.Producto.IdProducto == id);
 
-        if (item.Cantidad -1 > 0)
+        if (item.Cantidad - 1 > 0)
         {
-            decimal? precioFinal = (item.Producto.PrecioOferta != 0 && item.Producto.PrecioOferta < item.Producto.Precio) ? 
-            item.Producto.PrecioOferta : item.Producto.Precio;
+            decimal? precioFinal = (item.Producto.PrecioOferta != 0 && item.Producto.PrecioOferta < item.Producto.Precio) ?
+                item.Producto.PrecioOferta : item.Producto.Precio;
 
             item.Cantidad--;
             item.Total = item.Cantidad * precioFinal;
@@ -197,11 +200,19 @@
     {
         CarritoDTO item = lista.First(p => p.Producto.IdProducto == id);
 
-        decimal? precioFinal = (item.Producto.PrecioOferta != 0 && item.Producto.PrecioOferta < item.Producto.Precio) ?
-            item.Producto.PrecioOferta : item.Producto.Precio;
+        if (item.Cantidad < item.Producto.Cantidad) // Verificar si la cantidad actual es menor al stock disponible
+        {
+            decimal? precioFinal = (item.Producto.PrecioOferta != 0 && item.Producto.PrecioOferta < item.Producto.Precio) ?
+                item.Producto.PrecioOferta : item.Producto.Precio;
 
-        item.Cantidad++;
-        item.Total = item.Cantidad * precioFinal;
+            item.Cantidad++;
+            item.Total = item.Cantidad * precioFinal;
+        }
+        else
+        {
+            // Mostrar un mensaje de error al usuario si se intenta exceder el stock disponible
+            toastService.ShowWarning("No puedes agregar más de la cantidad disponible en el inventario.");
+        }
     }
 
     private async Task Eliminar(int idProducto)
@@ -228,28 +239,41 @@
         foreach (var item in lista)
         {
             detalle.Add(new DetalleVentaDTO()
-            {
-                IdProducto = item.Producto.IdProducto,
-                Cantidad = item.Cantidad,
-                Total = item.Total
-            });
+                {
+                    IdProducto = item.Producto.IdProducto,
+                    Cantidad = item.Cantidad,
+                    Total = item.Total ?? 0m
+                });
         }
 
         var authState = await authenticationState;
         string idUsuario = authState.User.Claims.Where(c => c.Type == ClaimTypes.NameIdentifier).Select(c => c.Value).Single();
+        string nombreUsuario = authState.User.Identity.Name; // Obtener el nombre del usuario
 
         VentaDTO modelo = new VentaDTO()
-        {
-            IdUsuario = Convert.ToInt32(idUsuario),
-            Total = lista.Sum(i => i.Total),
-            DetalleVenta = detalle
-        };
+            {
+                IdUsuario = Convert.ToInt32(idUsuario),
+                Total = lista.Sum(i => i.Total ?? 0m),
+                DetalleVenta = detalle
+            };
 
         var response = await ventaServicio.Registrar(modelo);
 
         if (response.EsCorrecto)
         {
             await carritoServicio.LimpiarCarrito();
+
+            // Crear la notificación
+            var notificacion = new NotificacionDTO
+                {
+                    FechaCreacion = DateTime.Now,
+                    MetodoPago = metodoPagoSeleccionado,
+                    NombreConsumidor = nombreUsuario
+                };
+
+            // Guardar la notificación
+            await notificacionServicio.GuardarNotificacion(notificacion);
+
             toastService.ShowSuccess("Venta registrada");
             _navServicio.NavigateTo("/catalogo");
         }

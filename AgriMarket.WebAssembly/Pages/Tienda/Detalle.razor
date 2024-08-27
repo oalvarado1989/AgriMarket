@@ -2,6 +2,7 @@
 
 @inject IProductoServicio productoServicio
 @inject ICarritoServicio carritoServicio
+@inject IToastService toastService
 
 <div class="container px-4 px-lg-5 my-5">
 
@@ -28,7 +29,7 @@
                 </div>
                 <p class="lead">@modelo.Descripcion</p>
                 <div class="d-flex">
-                    <input class="form-control text-center me-3" type="number" min="1" style="width:60px" @bind-value="cantidad">
+                    <input class="form-control text-center me-3" type="number" min="1" max="@modelo.Cantidad" style="width:60px" @bind-value="cantidad">
                     <button class="btn btn-outline-dark flex-shrink-0 me-3" type="button" @onclick="(async() => await AgregarCarrito(modelo))">
                         <i class="bi-cart-fill me-1"></i>
                         Agregar al carrito
@@ -67,18 +68,24 @@
 
     private async Task AgregarCarrito(ProductoDTO modelo)
     {
+        if (cantidad > modelo.Cantidad)
+        {
+            // Mostrar un mensaje de error al usuario (usando, por ejemplo, el servicio de toast)
+            toastService.ShowWarning("La cantidad seleccionada excede el stock disponible.");
+            return;
+        }
+
         decimal? precioFinal = (modelo.PrecioOferta != 0 && modelo.PrecioOferta < modelo.Precio) ? modelo.PrecioOferta : modelo.Precio;
 
         CarritoDTO carrito = new CarritoDTO()
             {
                 Producto = modelo,
-                    Cantidad = cantidad,
-                    Precio = precioFinal,
-                    Total = Convert.ToDecimal(cantidad)*precioFinal
+                Cantidad = cantidad,
+                Precio = precioFinal,
+                Total = Convert.ToDecimal(cantidad) * precioFinal
             };
 
-            await carritoServicio.AgreagrCarrito(carrito);
-
+        await carritoServicio.AgreagrCarrito(carrito);
     }
 
 }
